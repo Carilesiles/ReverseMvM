@@ -167,7 +167,7 @@ filter_tf_bot_has_tag
 			info_target
 			{
 	            "targetname" "Zombie"
-	            "origin" "0 0 200"
+	            "origin" "0 0 100"
 			}
 		}
 }
@@ -3052,61 +3052,6 @@ Wave //Vague 6
 					
 			}
 	}
-Wave //Vague 7
-	{
-		checkpoint yes
-		InitWaveOutput
-			{
-				Target	bombpath_choose_random_relay
-				Action	Trigger
-			}
-			startwaveoutput
-			{
-				target wave_start_relay
-				action trigger
-			}
-			doneoutput
-			{
-				target wave_finished_relay
-				action RunScriptCode
-			}
-			WaveSpawn
-			{
-				totalcurrency 100
-				name "6-1"
-				totalcount 2
-				maxactive 1
-				spawncount 1
-				waitbetweenspawns 0
-				waitbeforestarting 0
-				//FirstSpawnWarningSound /mvm/pizza_tower_vigilante_theme.mp3
-				where spawnbot
-					TFbot
-						{
-							Class Heavyweapons
-							Attributes MiniBoss
-							Health 35000
-							Item "Point and Shoot"
-							Name "Ignis HeavyBlaster"
-							ClassIcon wizard_giant
-							WeaponRestrictions meleeonly
-							Action Mobber
-							Attributes UseBossHealthBar							
-							Item "Seared Sorcerer"
-							CharacterAttributes
-							{
-								"move speed bonus"	0.5
-								"damage force reduction" 0.4
-								"airblast vulnerability multiplier" 0.4
-								"override footstep sound set" 3
-							}
-							//First attack cross normal
-							//Spawntemplate Firetornado
-							//SpawnTemplate deflagration
-							Spawntemplate Heatwave
-							SpawnTemplate Rocketattack
-							SpawnTemplate Rocketattackb
-						}
-			}
-	}
 } //Cloture de script
+
+#base judge_restricts.pop
