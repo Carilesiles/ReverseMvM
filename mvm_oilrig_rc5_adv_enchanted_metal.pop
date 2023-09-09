@@ -1,0 +1,3112 @@
+#base robot_giant.pop
+#base robot_standard.pop
+#base robot_gatebot.pop
+#base robot_guide.pop
+#base honor_robot_template.pop
+#base robot_caustic.pop
+
+//Special Thank too:
+
+//Sergeant Table for looking into the popfile and allow me to use some part of drill down disaster mechanic
+//Bazooks, for helping me with props dynamic and particle effect and teaching me how to use it
+//TF_Gatebot_Engineer and Zilloy to teach me how to make loop with pointemplate and using my props 
+//Yuugi for the fireball pointtemplate
+// And all the testers that test the mission
+
+WaveSchedule
+{
+//Precache
+PrecacheModel models\props_mvm\robot_spawnpoint.mdl
+PrecacheModel models\props_mvm\robot_spawnpoint_warning.mdl
+PrecacheSound mvm/zombie_spawn_necro.mp3
+PrecacheSound mvm/pizza_tower_vigilante_theme.mp3
+CustomWeapon
+{
+  "Homing Rockets Mimic"
+  {
+    OriginalItemName "tf_weapon_rocketlauncher"
+      "projectile trail particle" eyeboss_projectile // Purple Trail that indicates homing rockets
+      "mod projectile heat aim error" 90 // How strong the heat seeking power in aim in degrees
+      "mod projectile heat seek power" 45 // How strong the heat seek power in degrees per second
+      "mod projectile heat aim time" 2.5 // For how long should the projectile home in 
+	  "projectile speed decreased" 0.65
+  }
+}
+Templates
+{
+	    T_TFBot_Giant_Heavy_GRU_TEMP
+            {
+                Name "Giant GRU Heavy"
+                Class Heavyweapons
+                ClassIcon heavy_gru_giant
+                Scale 1.75
+                Health 5000
+                
+                Attributes MiniBoss
+                Skill Expert
+                WeaponRestrictions MeleeOnly
+                
+                Tag bot_giant
+                Item "Gloves of Running Urgently MvM"
+                
+                CharacterAttributes
+                {
+                    "move speed bonus" 0.5
+                    "damage force reduction" 0.3
+                    "airblast vulnerability multiplier" 0.3
+                    "override footstep sound set" 2 
+                }
+            }
+			Honor_Bot_Necromancer
+				{
+					Class Demoman
+					Item "Death Stare"
+					Name "Necromancer Demobot"
+					ClassIcon "spell_skeletons_lite"
+					Item "Freedom Staff"
+					Health 800
+					WeaponRestrictions "MeleeOnly"
+					Scale 1.4
+					Item "Forgotten King's Pauldrons"
+					skill "expert"
+					FireInput
+					{
+						Target "spawnbot_zombie" //You are not force to use this spawn_bot, you can create your own
+						Action "Enable"
+						Delay 8
+						Repeats 1
+					}
+					SpawnTemplate "Zombietp"
+				}
+			Honor_Zombie_pyro
+				{
+					Class Pyro
+					UseHumanModel 2
+					skill easy
+					WeaponRestrictions	MeleeOnly
+					ClassIcon "heavy_zombie_lite"
+					Name "Zombie Pyro"
+					Item "Zombie Pyro"
+						FireInput
+						{
+							Target !self //targets the bot this is on
+							Action $TeleportToEntity
+							Delay 0
+							Origin "0 0 200"
+							Cooldown 8
+							Repeats 1
+							Param Zombie //name of an info_target on top of the tank
+						}
+				}
+			Honor_Zombie_Scout
+				{
+					Class Scout
+					UseHumanModel 2
+					Name "Zombie Scout"
+					ClassIcon "heavy_zombie_lite"
+					skill easy
+					WeaponRestrictions	MeleeOnly
+					Item "Zombie pyro"
+					Item "Unarmed Combat"
+							FireInput
+							{
+								Target !self //targets the bot this is on
+								Action $TeleportToEntity
+								Delay 0
+								Origin "0 0 200"
+								Cooldown 8
+								Repeats 1
+								Param Zombie //name of an info_target on top of the tank
+							}
+					}
+			Honor_Zombie_Heavy
+				{
+					Class Heavy
+					UseHumanModel 2
+					skill easy
+					WeaponRestrictions	MeleeOnly
+					ClassIcon "heavy_zombie_lite"
+					Item "Zombie Heavy"
+					Name "Zombie Heavy"
+							FireInput
+							{
+								Target !self //targets the bot this is on
+								Action $TeleportToEntity
+								Delay 0
+								Origin "0 0 200"
+								Cooldown 8
+								Repeats 1
+								Param Zombie //name of an info_target on top of the tank
+							}
+					}
+}
+ExtraSpawnPoint
+		{
+			Name "spawnbot_zombie" //Template made by sergeant Table for Drill_down_disaster
+			TeamNum 3
+			X	"4107.401367"
+			Y	"-1183.587402"
+			Z	"129.031311"
+			StartDisabled 1
+		}			
+StartingCurrency 800
+CanBotsAttackWhileInSpawnRoom No
+RespawnWaveTime 2
+WaveStartCountdown 3
+ForceHoliday 2
+PointTemplates 
+{
+filter_tf_bot_has_tag
+			{
+				"targetname" "Zombietp"
+				"tags" "teleport"
+				"require_all_tags" "1"
+			}
+		Zombietp //Template made by Sergeant Table
+		{
+			info_target
+			{
+	            "targetname" "Zombie"
+	            "origin" "0 0 200"
+			}
+		}
+}
+PointTemplates // <------- TRocket template
+{
+    NoFixup 1
+	extra_guff_and_fluff
+		{
+		//NoFixup 1
+		logic_auto	
+		{
+			"origin" "0 0 0"
+			"targetname" "mainrelay"
+
+			"OnmapSpawn"
+		"tf_objective_resource, $SetclientProp$m_iszMvMPopfileName, enchanted metal,0,-1"
+		}
+		}
+	bossmusic
+		{
+			ambient_generic
+				{
+					"targetname" "bosssound"
+					"message" "/mvm/pizza_tower_vigilante_theme.mp3"
+					"health" "10"
+					"pitch" "100"
+					delay 0.33
+					"spawnflags" "17"
+				}
+				OnParentKilledOutput
+				{
+					Target "bosssound"
+					Action StopSound
+				}
+				OnSpawnOutput
+				{
+					Target "bosssound"
+					Action PlaySound
+				}
+		}	
+    WeaponMimicRocket
+		{
+		OnSpawnOutput
+            {
+                Target "shoot"
+                Action "$StartFiring"
+                Delay 5.00
+            }
+			tf_point_weapon_mimic
+			{
+				"targetname" "shoot"
+				//"origin" "100 0 -5"
+				"$Firetime" 5
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "75"
+				"teamnum" "3"
+				"OnUser1" "!self,FireOnce,,0,-1"
+				"OnUser1" "!self,FireUser1,,1,-1"
+			}
+		}
+		WeaponMimicRocketB
+		{
+		OnSpawnOutput
+            {
+                Target "shoot"
+                Action "$StartFiring"
+                Delay 5.25
+            }
+			tf_point_weapon_mimic
+			{
+				"targetname" "shoot"
+				//"origin" "100 0 -5"
+				"$Firetime" 5
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "75"
+				"teamnum" "3"
+				"OnUser1" "!self,FireOnce,,0,-1"
+				"OnUser1" "!self,FireUser1,,1,-1"
+			}
+		}
+		WeaponMimicRocketC
+		{
+		OnSpawnOutput
+            {
+                Target "shoot"
+                Action "$StartFiring"
+                Delay 5.45
+            }
+			tf_point_weapon_mimic
+			{
+				"targetname" "shoot"
+				//"origin" "100 0 -5"
+				"$Firetime" 5
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "75"
+				"teamnum" "3"
+				"OnUser1" "!self,FireOnce,,0,-1"
+				"OnUser1" "!self,FireUser1,,1,-1"
+			}
+		}
+		fireball_spell_caster // Use SpawnTemplate inside the TFBot block
+        {
+            OnSpawnOutput // this is required otherwise it can crash the server
+            {
+                Target "fireball_mimic" // this the targetname of the mimic
+                Action "$SetOwner" // This will make the bot own the dragon's fury mimic
+                Param "!activator" // The bot is the case of the activator
+                Delay 0.1 // safety precaution
+            }
+            tf_point_weapon_mimic
+            {
+                "targetname" "fireball_mimic" // This is the name you can fire the mimic using FireOnce output
+                "TeamNum" "3" // this will only hurt Red Players
+                //"crits" "0" // Set this to 1 if you want crits
+                "$weaponname" "the dragon's fury" // this is what makes if fire the Dragon's Fury Porjectile
+                //"origin" "0 0 0" // you can set this where the mimic fires from the bot, in this case form his feet?
+            }
+        }
+		Rocketparticle
+		{
+		OnSpawnOutput
+            {
+                Target "shoot"
+                Action "$StartFiring"
+                Delay 5.45
+            }
+			info_particle_system
+			{
+				effect_name "burningplayer_rainbow_stars03"
+				start_active 1
+				flag_as_weather 0
+			}
+		}
+	Necrobotparticle
+		{
+		OnSpawnOutput
+            {
+                Target "shoot"
+                Action "$StartFiring"
+                Delay 0.11
+            }
+			info_particle_system
+			{
+				effect_name "eyeboss_death_vortex"
+				start_active 1
+				flag_as_weather 0
+			}
+		}
+
+	Testcord
+	    {
+        OnspawnOutput
+        {
+	        Target "props_dynamic_relay"
+	        Action "Trigger"
+	        Delay 0
+        }
+		logic_relay 
+        {
+        targetname "props_dynamic_relay"
+		"spawnflags" 2
+        "OnTrigger" "props_dynamic,Enable, , 0, -1"	
+		"OnTrigger" "props_dynamic,Disable, , 6, -1"
+		"OnTrigger" "!self,Trigger,,8,-1"
+        }
+        prop_dynamic
+        {		
+		targetname "props_dynamic"
+        Model "models/props_mvm/robot_spawnpoint_warning.mdl"
+        angles "0 0 0"
+		Origin "200 0 200"
+		"startdisabled" "1"
+		modelscale 3
+		"rendercolor" "255 150 0"
+        Skin 2
+       }
+	}
+
+	Fireattack
+	    {
+	    OnSpawnOutput // this is required otherwise it can crash the server
+            {
+                Target "firemimic" // this the targetname of the mimic
+                Action "$SetOwner" // This will make the bot own the dragon's fury mimic
+                Param "!activator" // The bot is the case of the activator
+                Delay 0.1 // safety precaution
+            }
+        OnspawnOutput
+        {
+	        Target "props_dynamic_relay"
+	        Action "Trigger"
+	        Delay 2
+        }
+        logic_relay 
+        {
+        targetname "props_dynamic_relay"
+		"spawnflags" 2
+        "OnTrigger" "props_dynamic,Enable, , 0, -1"	
+		"OnTrigger" "props_dynamic,Disable, , 6, -1"
+		"OnTrigger" "firemimic,Fireonce, !activator, 4, -1"	
+		"OnTrigger" "!self,Trigger,,8,-1"
+        }
+        prop_dynamic
+        {		
+		targetname "props_dynamic"
+        Model "models/props_mvm/robot_spawnpoint_warning.mdl"
+        angles "0 0 0"
+		"startdisabled" "1"
+		"rendercolor" "255 150 0"
+        Skin 2
+       }
+	   tf_point_weapon_mimic
+            {
+                "targetname" "firemimic" // This is the name you can fire the mimic using FireOnce output
+                "TeamNum" "3" // this will only hurt Red Players
+                //"crits" "0" // Set this to 1 if you want crits
+                "$weaponname" "the dragon's fury" // this is what makes if fire the Dragon's Fury Porjectile
+                //"origin" "0 0 0" // you can set this where the mimic fires from the bot, in this case form his feet?
+               angles "270 0 0"
+            }
+    }
+	Rocketattack
+	  {
+        OnspawnOutput
+        {
+        Target "props_dynamic_relay"
+        Action "Trigger"
+        Delay 2
+        }
+        logic_relay 
+        {
+        targetname "props_dynamic_relay"
+		"spawnflags" 2
+        "OnTrigger" "props_dynamic,Enable, , 0, -1"	
+		"OnTrigger" "props_dynamic,Disable, , 4, -1"
+		"OnTrigger" "rocket*,Fireonce, , 2, -1"	
+		"OnTrigger" "!self,Trigger,,20,-1"
+        }
+        prop_dynamic
+        {		
+		targetname "props_dynamic"
+        Model "models/props_mvm/robot_spawnpoint_warning.mdl"
+        angles "90 0 0"
+		Origin "0 0 150"
+		"startdisabled" "1"
+		"rendercolor" "255 150 0"
+		"Modelscale" "5"
+        Skin 2
+       }
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocketA"
+				"startdisabled" "1"
+				"origin" "100 0 250"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocketB"
+				"startdisabled" "1"
+				"origin" "100 0 200"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocketC"
+				"startdisabled" "1"
+				"origin" "100 0 150"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocketD"
+				"startdisabled" "1"
+				"origin" "100 0 100"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocketE"
+				"startdisabled" "1"
+				"origin" "100 0 50"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocketF"
+				"startdisabled" "1"
+				"origin" "100 50 150"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocketG"
+				"startdisabled" "1"
+				"origin" "100 100 150"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocketD"
+				"startdisabled" "1"
+				"origin" "100 -50 150"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocketE"
+				"startdisabled" "1"
+				"origin" "100 -100 150"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+    }
+
+    Rocketattackb //Cross but inverted
+	    {
+        OnspawnOutput
+        {
+        Target "props_dynamic_relay"
+        Action "Trigger"
+        Delay 2
+        }
+        logic_relay 
+        {
+        targetname "props_dynamic_relay"
+		"spawnflags" 2
+        "OnTrigger" "props_dynamic,Enable, , 6, -1"
+        "OnTrigger" "rocket_*,Fireonce, , 8, -1"
+		"OnTrigger" "props_dynamic,Disable, , 10, -1"
+		"OnTrigger" "!self,Trigger,,30,-1"
+        }
+        prop_dynamic
+        {		
+		targetname "props_dynamic"
+        Model "models/props_mvm/robot_spawnpoint_warning.mdl"
+        angles "90 0 0"
+		"startdisabled" "1"
+		"rendercolor" "255 150 0"
+		"Modelscale" "4"
+        Skin 2
+       }
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_A"
+				"startdisabled" "1"
+				"origin" "100 0 150"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_B"
+				"startdisabled" "1"
+				"origin" "100 0 150"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_C"
+				"startdisabled" "1"
+				"origin" "100 0 150"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_K"
+				"startdisabled" "1"
+				"origin" "100 50 200"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_D"
+				"startdisabled" "1"
+				"origin" "100 100 250"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_E"
+				"startdisabled" "1"
+				"origin" "100 50 100"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_F"
+				"startdisabled" "1"
+				"origin" "100 100 50"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_G"
+				"startdisabled" "1"
+				"origin" "100 -50 200"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_H"
+				"startdisabled" "1"
+				"origin" "100 -100 250"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+tf_point_weapon_mimic
+			{
+				"targetname" "rocket_I"
+				"startdisabled" "1"
+				"origin" "100 -50 100"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocket_J"
+				"startdisabled" "1"
+				"origin" "100 -100 50"
+				"speedmin" "1000"
+				"speedmax" "1000"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "150"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+    }
+
+	Homingattack //The path attack
+	    {
+        OnspawnOutput
+        {
+        Target "props_dynamic_relay"
+        Action "Trigger"
+        Delay 2
+        }
+        logic_relay 
+        {
+        targetname "props_dynamic_relay"
+		"spawnflags" 2
+        "OnTrigger" "props_dynamic,Enable, , 1, -1"
+        "OnTrigger" "fire_homing_rocket,Fireonce,, 2, -1"
+		"OnTrigger" "props_dynamic,Disable,, 3, -1"
+		"OnTrigger" "!self,Trigger,,35,-1"
+        }
+        prop_dynamic
+        {		
+		targetname "props_dynamic"
+        Model "models/props_mvm/robot_spawnpoint_warning.mdl"
+        //angles "270 0 0"
+		"startdisabled" "1"
+		"rendercolor" "117 4 222"
+        Skin 2
+       }
+	   tf_point_weapon_mimic
+            {
+                "targetname" "fire_homing_rocket"
+                //"origin" "0 0 0" // you can edit this if you want
+                "angles" "270 0 0" // you can edit this if you want
+                "teamnum" "3" // this only hurts to Red players
+				"startdisabled" "1"
+                "$weaponname" "Homing Rockets Mimic" // This is important! So the weaponmimic can use the custom homing rocket launcher
+            }
+    }
+
+Heatwave
+	   {
+        OnspawnOutput
+        {
+        Target "props_dynamic_relay"
+        Action "Trigger"
+        Delay 2
+        }
+        logic_relay 
+        {
+        targetname "props_dynamic_relay"
+	    "spawnflags" 2
+//***************************************
+		//Particle spawn
+	  	"OnTrigger" "particle_A*,Start,, 0,-1"
+		"OnTrigger" "particle_A*,Stop,, 3,-1"
+		"OnTrigger" "particle_B*,Start,, 3,-1"
+		"OnTrigger" "particle_B*,Stop,, 6,-1"
+	  	"OnTrigger" "particle_C*,Start,, 6,-1"
+		"OnTrigger" "particle_C*,Stop,, 9,-1"
+	  	"OnTrigger" "particle_D*,Start,, 9,-1"
+		"OnTrigger" "particle_D*,Stop,, 12,-1"
+	  	"OnTrigger" "particle_E*,Start,, 12,-1"
+		"OnTrigger" "particle_E*,Stop,, 15,-1"
+//***************************************
+//Dmg trigger enable
+"OnTrigger" "dmg_triggerA,Enable,, 0,-1"
+"OnTrigger" "dmg_triggerA,Disable,, 3,-1"
+"OnTrigger" "dmg_triggerB,Enable,, 3,-1"
+"OnTrigger" "dmg_triggerB,Disable,, 6,-1"
+"OnTrigger" "dmg_triggerC,Enable,, 6,-1"
+"OnTrigger" "dmg_triggerC,Disable,, 9,-1"
+"OnTrigger" "dmg_triggerD,Enable,, 9,-1"
+"OnTrigger" "dmg_triggerD,Disable,, 12,-1"
+"OnTrigger" "dmg_triggerE,Enable,, 12,-1"
+"OnTrigger" "dmg_triggerE,Disable,, 15,-1"
+		"OnTrigger" "!self,Trigger,,75,-1"
+//***************************************
+        }
+    trigger_ignite
+		{
+		targetname "dmg_triggerA"
+		spawnflags 1
+		"startdisabled" "1"
+		Origin "100 0 0" 
+		mins "0 -200 -500"		
+		maxs "200 200 300"
+		TeamNum 3
+		"damage_per_second" "10"
+		"Burn_duration" "10"
+		}
+trigger_ignite
+		{
+		targetname "dmg_triggerB"
+		spawnflags 1
+		"startdisabled" "1"
+Origin "300 0 0" 
+		mins "0 -300 -500"		
+		maxs "200 300 300"
+		TeamNum 3
+		"damage_per_second" "8"
+		"Burn_duration" "7"
+		}
+trigger_ignite
+		{
+		targetname "dmg_triggerC"
+		spawnflags 1
+		"startdisabled" "1"
+Origin "500 0 0" 
+		mins "0 -400 -500"		
+		maxs "200 400 300"
+		TeamNum 3
+		"damage_per_second" "6"
+		"Burn_duration" "5"
+		}
+trigger_ignite
+		{
+		targetname "dmg_triggerD"
+		spawnflags 1
+		"startdisabled" "1"
+Origin "700 0 0" 
+		mins "0 -500 -500"		
+		maxs "200 500 300"
+		TeamNum 3
+		"damage_per_second" "5"
+		"Burn_duration" "4"
+		}
+trigger_ignite
+		{
+		targetname "dmg_triggerE"
+		spawnflags 1
+		"startdisabled" "1"
+Origin "900 0 0" 
+		mins "0 -600 -500"		
+		maxs "200 600 300"
+		TeamNum 3
+		"damage_per_second" "3"
+		"Burn_duration" "2"
+		}
+info_particle_system
+			{	
+				targetname "particle_A1"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "100 0 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_A3"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "100 200 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_A5"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "100 -200 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_A6"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "200 0 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_A8"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "200 200 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_A9"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "200 -200 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B1"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "300 0 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B2"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "300 150 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B4"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "300 -150 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B6"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "400 0 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B7"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "400 150 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B10"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "400 -150 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B11"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "300 -300 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B12"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "300 300 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B13"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "400 -300 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_B14"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "400 300 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_C1"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "500 0 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_C3"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "500 200 0"
+			}
+
+info_particle_system
+			{	
+				targetname "particle_C5"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "500 -200 0"
+			}
+
+info_particle_system
+			{	
+				targetname "particle_C6"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "600 0 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_C8"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "600 200 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_C9"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "600 -200 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_C15"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "500 -400 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_C16"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "500 400 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_C17"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "600 -400 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_C18"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "600 400 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D1"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "700 0 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D3"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "700 150 0"
+			}
+
+info_particle_system
+			{	
+				targetname "particle_D5"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "700 -150 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D12"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "700 300 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D13"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "800 -300 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D14"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "800 300 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D19"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "700 -500 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D20"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "700 500 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D21"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "800 -500 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_D22"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "800 500 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E1"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "900 0 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E3"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "900 200 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E5"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "900 -200 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E16"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "900 400 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E17"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "1000 -400 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E18"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "1000 400 0"
+			}
+
+info_particle_system
+			{	
+				targetname "particle_E23"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "900 -600 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E24"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "900 600 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E25"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "1000 -600 0"
+			}
+info_particle_system
+			{	
+				targetname "particle_E26"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "1000 600 0"
+			}
+
+
+	}
+
+
+
+//******************************* Tene heavy
+	rocket_fire_tene_heavyA
+	    {
+        OnspawnOutput
+        {
+        Target "props_dynamic_relay"
+        Action "Trigger"
+        Delay 2
+        }
+        logic_relay 
+        {
+        targetname "props_dynamic_relay"
+		"spawnflags" 2
+        "OnTrigger" "props_dynamic,Enable, , 0, -1"	
+		"OnTrigger" "props_dynamic,Disable, , 8, -1"
+		"OnTrigger" "rocketa,Fireonce, , 2, -1"
+		"OnTrigger" "rocketb,Fireonce, , 4, -1"	
+		"OnTrigger" "grenade,Fireonce, , 6, -1"		
+		"OnTrigger" "!self,Trigger,,10,-1"
+        }
+        prop_dynamic
+        {		
+		targetname "props_dynamic"
+        Model "models/props_mvm/robot_spawnpoint_warning.mdl"
+        //angles "90 0 0"
+		"startdisabled" "1"
+        Skin 2
+        }
+	   tf_point_weapon_mimic
+			{
+				"targetname" "rocketa"
+				"startdisabled" "1"
+				//"origin" "0 0 5"
+				"crits" "0" // Set this to 1 if you want crits
+				"speedmin" "1000"
+				"speedmax" "1000"
+				angles "-75 0 0"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "75"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+			tf_point_weapon_mimic
+			{
+				"targetname" "rocketb"
+				"startdisabled" "1"
+				//"origin" "0 0 5"
+				"crits" "0" // Set this to 1 if you want crits
+				"speedmin" "1000"
+				"speedmax" "1000"
+				angles "-75 0 0"
+				"WeaponType" "0"
+				"SplashRadius" "160"
+				"Damage" "75"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+			tf_point_weapon_mimic
+			{
+				"targetname" "grenade"
+				"startdisabled" "1"
+				//"origin" "0 0 5"
+				"crits" "1" // Set this to 1 if you want crits
+				"speedmin" "1000"
+				"speedmax" "1000"
+				angles "-75 0 0"
+				"WeaponType" "1"
+				"SplashRadius" "160"
+				"Damage" "75"
+				"teamnum" "3"
+				//"OnUser1" "!self,FireOnce,,0,-1"
+				//"OnUser1" "!self,FireUser1,,1,-1"
+			}
+    }
+	
+deflagration
+	   {
+        OnspawnOutput
+        {
+        Target "props_dynamic_relay"
+        Action "Trigger"
+        Delay 2
+        }
+        logic_relay 
+        {
+        targetname "props_dynamic_relay"
+	    "spawnflags" 2
+		//Particle
+	  	"OnTrigger" "fire_A,Start,, 0,-1"
+		"OnTrigger" "fire_B,Start,, 0.40,-1"
+		"OnTrigger" "fire_C,Start,, 1.20,-1"
+		"OnTrigger" "fire_D,Start,, 2,-1"
+		"OnTrigger" "fire_E,Start,, 2.40,-1"
+		"OnTrigger" "fire_F,Start,, 3.20,-1"
+		"OnTrigger" "fire_A,Stop,, 5,-1"
+		"OnTrigger" "fire_B,Stop,, 5,-1"
+		"OnTrigger" "fire_C,Stop,, 5,-1"
+		"OnTrigger" "fire_D,Stop,, 5,-1"
+		"OnTrigger" "fire_E,Stop,, 5.20,-1"
+		"OnTrigger" "fire_F,Stop,, 5.40,-1"
+		//Bigger flame
+		"OnTrigger" "fire_H,Start,, 4,-1"
+		"OnTrigger" "fire_J,Start,, 4,-1"
+		"OnTrigger" "fire_K,Start,, 4,-1"
+		"OnTrigger" "fire_M,Start,, 4,-1"
+		"OnTrigger" "fire_N,Start,, 4,-1"
+		"OnTrigger" "fire_P,Start,, 4,-1"
+		"OnTrigger" "fire_Q,Start,, 4,-1"
+		"OnTrigger" "fire_S,Start,, 4,-1"
+		//Stopping the fire
+		"OnTrigger" "fire_G,Stop,, 8,-1"
+		"OnTrigger" "fire_H,Stop,, 8.11,-1"
+		"OnTrigger" "fire_J,Stop,, 8.11,-1"
+		"OnTrigger" "fire_K,Stop,, 8.11,-1"
+		"OnTrigger" "fire_M,Stop,, 8.11,-1"
+		"OnTrigger" "fire_N,Stop,, 8.11,-1"
+		"OnTrigger" "fire_P,Stop,, 8.11,-1"
+		"OnTrigger" "fire_Q,Stop,, 8.11,-1"
+		"OnTrigger" "fire_S,Stop,, 8.11,-1"
+		//dmg trigger
+		//Small fire enable
+		"OnTrigger" "small_fireA,Enable,, 0, -1"
+		"OnTrigger" "small_fireB,Enable,, 0.40, -1"
+		"OnTrigger" "small_fireC,Enable,, 1.20, -1"
+		"OnTrigger" "small_fireD,Enable,, 2, -1"
+		"OnTrigger" "small_fireE,Enable,, 2.40, -1"
+		"OnTrigger" "small_fireF,Enable,, 3.20, -1"
+		//Small fire disable
+		"OnTrigger" "small_fireA,Disable,, 0.10, -1"
+		"OnTrigger" "small_fireB,Disable,, 0.50, -1"
+		"OnTrigger" "small_fireC,Disable,, 1.30, -1"
+		"OnTrigger" "small_fireD,Disable,, 2.10, -1"
+		"OnTrigger" "small_fireE,Disable,, 2.50, -1"
+		"OnTrigger" "small_fireF,Disable,, 3.30, -1"
+		//Big Fire enable
+		"OnTrigger" "big_fireG,Enable,, 4, -1"
+		//Big fire disable
+		"OnTrigger" "big_fireG,Disable,, 8, -1"
+		"OnTrigger" "!self,Trigger,,60,-1"
+        }
+   trigger_ignite
+		{
+		targetname "small_fireA"
+		spawnflags 1
+		"startdisabled" "1"  
+		mins "-40 -40 -500"		
+		maxs "40 40 500"
+		TeamNum 3
+		"damage_per_second" "1"
+		"Burn_duration" "2"
+		}
+trigger_ignite
+		{
+		targetname "small_fireB"
+		spawnflags 1
+		"startdisabled" "1"
+		Origin "100 0 0" 
+		mins "60 -40 -500"		
+		maxs "140 40 500"
+		TeamNum 3
+		"damage_per_second" "1"
+		"Burn_duration" "2"
+		}
+trigger_ignite
+		{
+		targetname "small_fireC"
+		spawnflags 1
+		"startdisabled" "1"
+		Origin "200 0 0"
+		mins "160 -40 -500"		
+		maxs "240 40 500"
+		TeamNum 3
+		"damage_per_second" "1"
+		"Burn_duration" "2"
+		}
+trigger_ignite
+		{
+		targetname "small_fireD"
+		spawnflags 1
+		"startdisabled" "1"
+		Origin "300 0 0"  
+		mins "260 -40 -500"		
+		maxs "340 40 500"
+		TeamNum 3
+		"damage_per_second" "1"
+		"Burn_duration" "2"
+		}
+trigger_ignite
+		{
+		targetname "small_fireE"
+		spawnflags 1
+		"startdisabled" "1" 
+		Origin "400 0 0" 
+		mins "360 -40 -500"		
+		maxs "440 40 500"
+		TeamNum 3
+		"damage_per_second" "1"
+		"Burn_duration" "2"
+		}
+trigger_ignite
+		{
+		targetname "small_fireF"
+		spawnflags 1
+		"startdisabled" "1"
+		Origin "500 0 0" 
+		mins "460 -40 -500"		
+		maxs "540 40 500"
+		TeamNum 3
+		"damage_per_second" "1"
+		"Burn_duration" "2"
+		}
+trigger_ignite
+		{
+		targetname "big_fireG"
+		spawnflags 1
+		"startdisabled" "1"
+		Origin "500 0 0"
+		mins "-180 -180 -500"		
+		maxs "180 180 500"
+		TeamNum 3
+		"damage_per_second" "8"
+		"Burn_duration" "9"
+		}
+info_particle_system
+			{	
+				targetname "Fire_A"
+				effect_name "lava_playertouch_fire"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "0 0 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_B"
+				effect_name "lava_playertouch_fire"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "100 0 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_C"
+				effect_name "lava_playertouch_fire"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "200 0 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_D"
+				effect_name "lava_playertouch_fire"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "300 0 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_E"
+				effect_name "lava_playertouch_fire"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "400 0 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_F"
+				effect_name "lava_playertouch_fire"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "500 0 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_H" 
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "560 60 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_J"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "680 180 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_K"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "440 60 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_M"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "320 180 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_N"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "440 -60 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_P"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "320 -180 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_Q"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "560 -60 0"
+			}
+info_particle_system
+			{	
+				targetname "Fire_S"
+				effect_name "lava_fireball"
+				"startactive" "1"
+				flag_as_weather 0
+				Origin "680 -180 0"
+			}
+	   }
+
+}
+//------- Mission -----
+Mission
+	{
+		Objective DestroySentries
+		where spawnbot
+		BeginAtWave 1
+		RunForThisManyWaves 5
+		CooldownTime 30
+		InitialCooldown 30
+		DesiredCount 1
+		TFBot
+		{
+			Template T_TFBot_SentryBuster
+		}
+	}
+Mission
+	{
+		Objective Sniper
+		where spawnbot
+		BeginAtWave 3
+		RunForThisManyWaves 1
+		CooldownTime 20
+		InitialCooldown 60
+		DesiredCount 2
+		TFBot
+		{
+			Class Sniper
+			Skill Normal
+		}
+	}
+Mission
+	{
+		Objective Spy
+		where spawnbot
+		BeginAtWave 3
+		RunForThisManyWaves 1
+		CooldownTime 60
+		InitialCooldown 60
+		DesiredCount 2
+		TFBot
+		{
+			Class Spy
+			Skill Normal
+		}
+	}
+wave //Vague 1
+	{
+			checkpoint yes
+			InitWaveOutput
+			{
+				Target	bombpath_choose_random_relay
+				Action	Trigger
+			}
+			startwaveoutput
+			{
+				target wave_start_relay
+				action trigger
+			}
+			doneoutput
+			{
+				target wave_finished_relay
+				action trigger
+			}
+			Explanation
+			{
+				Line "{FFA6F0} Good evening, we noticed that robot are getting stronger for some reason."
+				Line "{FFA6F0} We will investigate and keep you inform, be extra carefull when you fight then."	
+			}
+			WaveSpawn
+				{
+					FirstSpawnWarningSound "vo\mvm\norm\scout_mvm_negativevocalization02.mp3"
+				}
+			WaveSpawn
+				{
+					FirstSpawnWarningSound "vo\mvm\norm\soldier_mvm_battlecry02.mp3"
+					waitbeforestarting 2
+				}
+			WaveSpawn
+				{
+					FirstSpawnWarningSound "vo\mvm\norm\pyro_mvm_laughevil02.mp3"
+					waitbeforestarting 2
+				}
+			WaveSpawn
+				{
+					FirstSpawnWarningSound "vo\mvm\norm\medic_mvm_battlecry02.mp3"
+					waitbeforestarting 2
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "1-1"
+					totalcount 2
+					maxactive 2
+					spawncount 1
+					waitbetweenspawns 10
+					waitbeforestarting 0
+					where spawnbot
+					tfbot
+						{
+							Template "T_TFBot_Giant_Soldier"
+							Skill "expert"
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "1-2"
+					totalcount 12
+					maxactive 6
+					spawncount 2
+					waitbetweenspawns 3
+					waitbeforestarting 0
+					where spawnbot
+					tfbot
+						{
+							Class Pyro
+							Skill Normal
+							ItemAttributes
+								{
+									ItemName	tf_weapon_flamethrower
+									"airblast disabled"	1
+								}
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "1-2"
+					totalcount 12
+					maxactive 6
+					spawncount 2
+					waitbetweenspawns 3
+					waitbeforestarting 0
+					where spawnbot
+					tfbot
+						{
+							Class Demoman
+							Skill Normal
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 200
+					name "1-4"
+					totalcount 10
+					waitforalldead "1-1"
+					maxactive 10
+					spawncount 5
+					waitbetweenspawns 8
+					waitbeforestarting 0
+					where spawnbot
+					Squad
+						{
+						tfbot
+							{
+								Template "Honor_Giant_Archer"
+							}
+						tfbot
+							{
+								Template "T_TFBot_Medic_QuickFix"
+							}
+						tfbot
+							{
+								Template "T_TFBot_Medic_QuickFix"
+							}
+						tfbot
+							{
+								Template "T_TFBot_Medic_QuickFix"
+							}
+						tfbot
+							{
+								Template "T_TFBot_Medic_QuickFix"
+							}
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "1-5"
+					waitforalldead "1-4"
+					totalcount 4
+					maxactive 2
+					spawncount 1
+					waitbetweenspawns 6
+					waitbeforestarting 0
+					where spawnbot
+					tfbot
+						{
+							Template T_TFBot_Giant_Pyro_Flare_Spammer
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 50
+					name "1-6"
+					waitforallspawned "1-4"
+					totalcount 16
+					maxactive 6
+					spawncount 2
+					waitbetweenspawns 3
+					waitbeforestarting 0
+					where spawnbot
+					tfbot
+						{
+							Template T_TFBot_Demoman_Knight
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 50
+					name "1-6"
+					waitforallspawned "1-4"
+					totalcount 8
+					maxactive 4
+					spawncount 1
+					waitbetweenspawns 3
+					waitbeforestarting 0
+					where spawnbot
+					tfbot
+						{
+							Template T_TFBot_Soldier_DirectHit
+							Skill Normal
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "1-Supp"
+					waitforallspawned "1-6"
+					totalcount 20
+					Support 1
+					maxactive 4
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0			
+					where spawnbot_right
+					where spawnbot_left
+					tfbot
+						{
+							Class Scout
+							ClassIcon "scout_bat_nys"
+							WeaponRestrictions meleeonly
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "1-Supp"
+					waitforallspawned "1-6"
+					randomspawn 1
+					totalcount 12
+					Support 1
+					maxactive 4
+					spawncount 1
+					waitbetweenspawns 4
+					waitbeforestarting 0
+					where spawnbot
+					tfbot
+					{
+						Class Soldier
+						WeaponRestrictions	SecondaryOnly
+						Name "Soldier Shotgun"
+						classicon "Heavy_shotgun"
+					}
+				}
+	} //Cloture de Vague
+wave //Vague 2
+	{
+			checkpoint yes
+			InitWaveOutput
+			{
+				Target	bombpath_choose_random_relay
+				Action	Trigger
+			}
+			startwaveoutput
+				{
+					target wave_start_relay
+					action trigger
+				}
+				doneoutput
+				{
+					target wave_finished_relay
+					action trigger
+				}
+			Explanation
+			{
+				Line "{FFA6F0} It appears the robot have found a magic book."
+				Line "{FFA6F0} They are using it to modify their rockets and manipulate then."
+				Line "{FFA6F0} We must stop then before they get too strong."	
+			}
+			Wavespawn
+				{
+					totalcurrency 275
+					name "2-1"
+					totalcount 12
+					maxactive 9
+					spawncount 3
+					waitbetweenspawns 8
+					waitbeforestarting 0
+					where spawnbot
+					Squad
+					{
+						tfbot
+							{
+								Template "T_TFBot_Giant_Pyro"
+								Skill "expert"
+								ItemAttributes
+									{
+										ItemName	tf_weapon_flamethrower
+										"airblast disabled"	1
+									}
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic_QuickFix"
+								Skill "expert"
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic_QuickFix"
+								Skill "expert"
+							}
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 75
+					name "2-2"
+					totalcount 20
+					maxactive 5
+					spawncount 1
+					waitbetweenspawns 2
+					waitbeforestarting 0
+					where spawnbot
+					tfbot //Taken from Drill down disaster, made by Sergeant Table
+					{
+						Class Medic
+						ClassIcon "medic_crossbow"
+						Name "Crossbow Medic"
+						Skill Normal
+						WeaponRestrictions PrimaryOnly
+						Item "the crusader's crossbow"
+						Item "Berliner's Bucket Helm"
+						ItemAttributes
+						{
+							ItemName the crusader's crossbow
+							"projectile penetration" 1
+						}
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 75
+					name "2-2"
+					totalcount 25
+					maxactive 7
+					spawncount 1
+					waitbetweenspawns 2
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template T_TFBot_Pyro_Flaregun
+						Skill normal
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 75
+					name "2-3"
+					waitforallspawned "2-2"
+					totalcount 8
+					maxactive 4
+					spawncount 1
+					waitbetweenspawns 4
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template Honor_Bot_Necromancer
+						SpawnTemplate
+						{
+					            	Name "Necrobotparticle"
+					            	angles "0 90 0"
+					            	origin "0 0 0"
+									fov 75
+					    }
+					}
+				}
+			Wavespawn //Necro minion
+				{
+					totalcurrency 0
+					name "2-Minion"
+					Support 1					
+					totalcount 6
+					maxactive 6
+					spawncount 3
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot_zombie
+					Randomchoice
+					{
+						tfbot
+						{
+							Template Honor_Zombie_Heavy
+						}
+						tfbot
+						{
+							Template Honor_Zombie_Scout
+						}
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "2-4"
+					waitforallspawned "2-1"
+					totalcount 2
+					maxactive 2
+					spawncount 1
+					waitbetweenspawns 25
+					waitbeforestarting 25
+					where spawnbot
+					tfbot
+						{
+							Template T_TFBot_Giant_Heavy_GRU_TEMP
+							Skill "Hard"
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "2-4"
+					waitforallspawned "2-1"
+					totalcount 2
+					maxactive 2
+					spawncount 1
+					waitbetweenspawns 8
+					waitbeforestarting 8
+					where spawnbot
+					tfbot
+						{
+							Template Honor_Giant_Archer
+							Skill "Hard"
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 200
+					name "2-5"
+					waitforalldead "2-4"
+					totalcount 12
+					maxactive 8
+					spawncount 4
+					waitbetweenspawns 10
+					waitbeforestarting 0
+					where spawnbot
+					Squad
+					{
+						tfbot
+							{
+								Template "T_TFBot_Giant_Demoman"
+								Skill "expert"
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic_Kritz"
+								ClassIcon medic_kritz2
+								Skill "expert"
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic_Kritz"
+								ClassIcon medic_kritz2
+								Skill "expert"
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic_Kritz"
+								ClassIcon medic_kritz2
+								Skill "expert"
+							}
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "2-Supp"
+					waitforalldead "2-3"
+					Support 1
+					totalcount 100
+					maxactive 5
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot_right
+					tfbot
+						{
+							Class Scout
+							ClassIcon "scout_bat_nys"
+							WeaponRestrictions meleeonly
+							FireInput
+							{
+								Target "spawnbot_zombie" //You are not force to use this spawn_bot, you can create your own
+								Action "Disable"
+								Delay 0.11
+								Repeats 1
+							}
+						}				
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "2-Supp"
+					Support 1
+					waitforalldead "2-3"
+					totalcount 50
+					maxactive 5
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot_left
+					tfbot
+						{
+							Template T_TFBot_Heavyweapons_Heavyweight_Champ
+							FireInput
+							{
+								Target "spawnbot_zombie" //You are not force to use this spawn_bot, you can create your own
+								Action "Disable"
+								Delay 0.11
+							}
+						}				
+				}
+			
+	} //Cloture de Vague
+wave //Vague 3
+	{
+			checkpoint yes
+			InitWaveOutput
+			{
+				Target	bombpath_choose_random_relay
+				Action	Trigger
+			}
+			startwaveoutput
+				{
+					target wave_start_relay
+					action trigger
+				}
+				doneoutput
+				{
+					target wave_finished_relay
+					action trigger
+				}
+			Wavespawn
+				{
+					totalcurrency 200
+					name "3-1"
+					totalcount 18
+					maxactive 6
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot_right
+					where spawnbot_left
+					TFBot 
+					{
+						Template Honor_Bot_Mage_Soldier
+						Skill normal
+					}	
+				}
+			Wavespawn
+				{
+					totalcurrency 150
+					name "3-2"
+					totalcount 2
+					maxactive 2
+					spawncount 1
+					waitbetweenspawns 8
+					waitbeforestarting 0
+					where spawnbot_right
+					where spawnbot_left
+					TFBot 
+					{
+						Template T_TFBot_Giant_Soldier_Crit
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "3-3"
+					waitforallspawned "3-1"
+					totalcount 3
+					maxactive 2
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 6
+					where spawnbot
+					TFBot 
+					{
+						Template Honor_Bot_Necromancer
+						SpawnTemplate
+						{
+					            	Name "Necrobotparticle"
+					            	angles "0 90 0"
+					            	origin "0 0 0"
+									fov 75
+					    }
+					}
+				}
+			Wavespawn //Necro minion
+				{
+					totalcurrency 0
+					name "3-Minion"
+					Support 1					
+					totalcount 9
+					maxactive 9
+					spawncount 3
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot_zombie
+					Randomchoice
+					{
+						tfbot
+						{
+							Template Honor_Zombie_pyro
+						}
+						tfbot
+						{
+							Template Honor_Zombie_Scout
+						}
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 300
+					name "3-4"
+					waitforalldead "3-2"
+					totalcount 10
+					maxactive 5
+					spawncount 5
+					waitbetweenspawns 2
+					waitbeforestarting 0
+					where spawnbot
+					Squad
+					{
+						tfbot
+							{
+								Template "T_TFBot_Giant_Heavyweapons"
+								Skill "expert"
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic"
+								Skill "expert"
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic"
+								Skill "expert"
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic"
+								Skill "expert"
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic"
+								Skill "expert"
+							}
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "3-5"
+					waitforalldead "3-3"
+					totalcount 21
+					maxactive 7
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template T_TFBot_Demo_Burst
+						Skill Normal
+						FireInput
+							{
+								Target "spawnbot_zombie" 
+								Action "Disable"
+								Delay 8
+								Repeats 1
+							}
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "3-6"
+					waitforalldead "3-3"
+					totalcount 24
+					maxactive 6
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template T_TFBot_Sniper_Huntsman
+						ClassIcon sniper_bow
+						Skill Normal
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 50
+					name "3-SUPP"
+					Support 1
+					randomspawn 1
+					waitforalldead "3-5"
+					totalcount 50
+					maxactive 6
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot_right
+					where spawnbot_left
+					where spawnbot
+					TFBot 
+					{
+						Class Scout
+						Skill Normal
+					}
+				}
+
+	} //Cloture de Vague
+Wave //Vague 4
+{
+			checkpoint yes
+			InitWaveOutput
+			{
+				Target	bombpath_choose_random_relay
+				Action	Trigger
+			}
+			startwaveoutput
+				{
+					target wave_start_relay
+					action trigger
+				}
+				doneoutput
+				{
+					target wave_finished_relay
+					action trigger
+				}
+				Explanation
+				{
+					Line "{FFA6F0} Some of the super scout have acquired a invisible spell."
+					Line "{FFA6F0} I strongly suggest you keep an eye on that bomb all the time."
+				}
+			Wavespawn
+				{
+					totalcurrency 50
+					name "4-1-A"
+					randomspawn 1
+					totalcount 1
+					maxactive 1
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template T_TFBot_Giant_Scout_Fast
+					}
+				}
+			WaveSpawn
+				{
+					totalcurrency 50
+					name "4-1-B"
+					waitforalldead "4-1-A"
+					totalcount 1
+					maxactive 1
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+						{
+							Template Honor_Bot_Super_Scout_Mage
+						}
+				}
+			
+			Wavespawn
+				{
+					totalcurrency 50
+					name "4-1-C"
+					waitforalldead "4-1-B"
+					randomspawn 1
+					totalcount 1
+					maxactive 1
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template T_TFBot_Giant_Scout_Fast
+					}
+				}
+			WaveSpawn
+				{
+					totalcurrency 50
+					name "4-1-D"
+					waitforalldead "4-1-C"
+					totalcount 1
+					maxactive 1
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+						{
+							Template Honor_Bot_Super_Scout_Mage
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 50
+					name "4-1-E"
+					waitforalldead "4-1-D"
+					randomspawn 1
+					totalcount 1
+					maxactive 1
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template T_TFBot_Giant_Scout_Fast
+					}
+				}
+			WaveSpawn
+				{
+					totalcurrency 50
+					name "4-1-F"
+					waitforalldead "4-1-E"
+					totalcount 1
+					maxactive 1
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+						{
+							Template Honor_Bot_Super_Scout_Mage
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 150
+					name "4-2"
+					totalcount 16
+					maxactive 6
+					spawncount 2
+					waitbetweenspawns 3
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template Honor_Bot_Mage_Soldier
+						Skill normal
+					}	
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "4-2"
+					totalcount 12
+					maxactive 6
+					spawncount 2
+					waitbetweenspawns 2
+					waitbeforestarting 20
+					where spawnbot_right
+					where spawnbot_left
+					Squad
+						{
+							tfbot
+							{
+								Class Heavyweapons
+								Skill easy
+								Maxvisionrange 1800
+							}
+							tfbot
+							{
+								Template "T_TFBot_Medic_QuickUber"
+							}
+						}
+				}
+			Wavespawn
+				{
+					totalcurrency 200
+					name "4-3"
+					waitforalldead "4-1-d"
+					totalcount 4
+					maxactive 2
+					spawncount 1
+					waitbetweenspawns 8
+					waitbeforestarting 12
+					where spawnbot
+					TFBot 
+					{
+						Template T_TFBot_Giant_Demo_Burst
+						Skill normal
+					}	
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "4-4"
+					waitforalldead "4-2"
+					totalcount 16
+					maxactive 8
+					spawncount 4
+					waitbetweenspawns 4
+					waitbeforestarting 0
+					where spawnbot
+					TFBot 
+					{
+						Template T_TFBot_Pyro_Flaregun
+						Attributes AlwaysCrit
+						Skill easy
+					}
+				}
+			Wavespawn
+				{
+					totalcurrency 100
+					name "4-5"
+					waitforalldead "4-3"
+					totalcount 8
+					maxactive 4
+					spawncount 2
+					waitbetweenspawns 12
+					waitbeforestarting 16
+					where spawnbot
+					Squad
+						{
+							tfbot
+							{
+								Template T_TFBot_Giant_Soldier_Spammer 
+							}
+							tfbot
+							{
+								Template T_TFBot_Medic_Kritz
+								Classicon medic_kritz2
+							}
+						}
+				}
+
+			Wavespawn
+				{
+					totalcurrency 100
+					name "4-SUPP"
+					Support 1
+					waitforalldead "4-4"
+					totalcount 40
+					maxactive 10
+					spawncount 1
+					waitbetweenspawns 0
+					waitbeforestarting 0
+					where spawnbot
+					Randomchoice
+					{
+						TFBot 
+						{
+							Class Scout
+							Skill Normal
+						}
+						TFbot
+						{
+							Class Pyro
+							Attributes Alwayscrit
+							Skill Expert
+							ItemAttributes
+								{
+									ItemName	tf_weapon_flamethrower
+									"airblast disabled"	1
+								}
+						}
+					}
+				}
+
+			
+}
+Wave //Vague 5
+	{
+		checkpoint yes
+		InitWaveOutput
+			{
+				Target	bombpath_choose_random_relay
+				Action	Trigger
+			}
+		startwaveoutput
+			{
+				target wave_start_relay
+				action trigger
+			}
+			doneoutput
+			{
+				target wave_finished_relay
+				action trigger
+			}
+			Explanation
+				{
+					Line "{FFA6F0} The robots are running out of time."
+					Line "{FFA6F0} Their general is going to make a mistake if we continue to pressure then."
+				}
+		Wavespawn
+				{
+					totalcurrency 100
+					name "5-1"
+					totalcount 4
+					maxactive 4
+					spawncount 1
+					waitbetweenspawns 12
+					waitbeforestarting 0
+					where spawnbot
+					Squad {
+					TFbot
+					{
+						Template T_TFBot_Giant_Soldier_Spammer 
+					}
+					TFbot
+					{
+						Template T_TFBot_Giant_Medic_Regen
+					}
+					}
+				}
+		Wavespawn
+			{
+				totalcurrency 75
+				name "5-1-Supp"
+				totalcount 24
+				maxactive 8
+				spawncount 2
+				waitbetweenspawns 2
+				waitbeforestarting 0
+				where spawnbot
+				TFbot
+					{
+						Template T_TFBot_Soldier_DirectHit
+						Skill Normal
+					}
+				}
+		Wavespawn
+			{
+				totalcurrency 75
+				name "5-2"
+				waitforallspawned "5-4"
+				totalcount 8
+				maxactive 8
+				spawncount 2
+				waitbetweenspawns 4
+				waitbeforestarting 4
+				where spawnbot
+				TFbot
+					{
+						Template Honor_Bot_Mage_Pyro_door_rocket
+						Skill Expert
+						ItemAttributes
+							{
+								ItemName	tf_weapon_flamethrower
+								"airblast disabled"	1
+							}
+					}
+				}
+		WaveSpawn
+			{
+				totalcurrency 50
+				waitforalldead "5-1"
+				name "5-3"
+				totalcount 1
+				maxactive 1
+				spawncount 1
+				waitbetweenspawns 0
+				waitbeforestarting 0
+				where spawnbot
+				TFbot
+						{
+							Template T_TFBot_Giant_Soldier_Extended_Concheror
+							Attributes Alwayscrit
+						}
+			}
+		WaveSpawn
+			{
+				totalcurrency 50
+				waitforalldead "5-3"
+				name "5-4"
+				totalcount 1
+				maxactive 1
+				spawncount 1
+				waitbetweenspawns 0
+				waitbeforestarting 0
+				where spawnbot
+				TFbot
+						{
+							Template T_TFBot_Giant_Soldier_Extended_Battalion
+							Attributes Alwayscrit
+						}
+			}
+		WaveSpawn
+			{
+				totalcurrency 50
+				waitforalldead "5-1-Supp"
+				name "5-5"
+				totalcount 16
+				maxactive 6
+				spawncount 1
+				waitbetweenspawns 0
+				waitbeforestarting 0
+				where spawnbot
+				TFbot
+						{
+							Class Heavyweapons
+							Skill Normal
+							MaxVisionRange 1800
+						}
+			}
+		WaveSpawn
+			{
+				totalcurrency 50
+				waitforalldead "5-1-Supp"
+				name "5-5"
+				totalcount 4
+				maxactive 1
+				spawncount 1
+				waitbetweenspawns 0
+				waitbeforestarting 0
+				where spawnbot
+				TFbot
+						{
+							Template T_TFBot_Heavyweapons_Fist
+							Skill expert
+							Attributes AlwaysCrit
+						}
+			}
+		WaveSpawn
+			{
+				totalcurrency 100
+				waitforallspawned "5-5"
+				name "5-6"
+				totalcount 12
+				maxactive 6
+				spawncount 2
+				waitbetweenspawns 2
+				waitbeforestarting 0
+				where spawnbot
+				Squad
+				{
+					TFbot
+						{
+							Template T_TFBot_Heavyweapons_Shotgun
+							Item "The Family Business"
+							Attributes AlwaysCrit
+						}
+					TFbot
+						{
+							Template T_TFBot_Medic_QuickFix
+						}
+				}
+			}
+		WaveSpawn
+			{
+				totalcurrency 100
+				waitforalldead "5-4"
+				name "5-7"
+				totalcount 4
+				maxactive 2
+				spawncount 2
+				waitbetweenspawns 0
+				waitbeforestarting 0
+				where spawnbot
+				Squad
+				{
+					TFbot
+						{
+							Template T_TFBot_Giant_Heavyweapons_BrassBeast
+							Classicon heavy_brass
+						}
+					TFbot
+						{
+							Template T_TFBot_Giant_Medic_Regen
+						}
+				}
+			}
+		WaveSpawn
+			{
+				waitforalldead "5-4"
+				name "5-T"
+				TotalCount 1
+				MaxActive 1
+				SpawnCount 1
+				WaitBeforeStarting 0
+				WaitBetweenSpawns 0
+				TotalCurrency 100
+				Tank
+				{
+					Name "tankboss"
+					StartingPathTrackNode "tank_path_b_1"
+					Health 11000
+					Speed 75
+					OnBombDroppedOutput
+					{
+						Target boss_deploy_relay
+						Action Trigger
+					}
+				}
+			}
+		WaveSpawn
+			{
+				totalcurrency 100
+				waitforallspawned "5-6"
+				name "5-SUPP"
+				Support 1
+				totalcount 24
+				maxactive 12
+				spawncount 1
+				waitbetweenspawns 0
+				waitbeforestarting 0
+				where spawnbot
+				TFbot
+						{
+							Template T_TFBot_Heavyweapons_Heavyweight_Champ
+							Item "The Buff Banner"
+							Skill expert
+							Classicon heavy_champ_banner
+							Attributes "SpawnWithFullCharge"
+							Item "Killing Gloves of Boxing"
+							CharacterAttributes
+							{
+								"increase buff duration" 5.0			
+							}
+							ItemAttributes
+							{
+								ItemName "tf_weapon_fists"
+								"set item tint RGB" 14216476
+							}
+						}
+			}
+	}
+Wave //Vague 6
+	{
+		checkpoint yes
+		InitWaveOutput
+			{
+				Target	bombpath_choose_random_relay
+				Action	Trigger
+			}
+			startwaveoutput
+			{
+				target wave_start_relay
+				action trigger
+			}
+			doneoutput
+			{
+				target wave_finished_relay
+				action RunScriptCode
+			}
+			Explanation
+			{
+				Line "{cfcfcf} Well, Gray man come save me."
+				Line "{cfcfcf} I'm just close to lose this, but I'm not defeated yet."	
+			}
+		WaveSpawn
+			{
+				totalcurrency 100
+				name "6-1"
+				totalcount 1
+				maxactive 1
+				spawncount 1
+				waitbetweenspawns 0
+				waitbeforestarting 35
+				//FirstSpawnWarningSound /mvm/pizza_tower_vigilante_theme.mp3
+				where spawnbot
+					TFbot
+						{
+							Class Heavyweapons
+							Attributes MiniBoss
+							Health 75000
+							Item "Point and Shoot"
+							Name "Ignis HeavyBlaster"
+							ClassIcon wizard_giant
+							WeaponRestrictions meleeonly
+							Action EscortFlag
+							Attributes UseBossHealthBar							
+							Item "Seared Sorcerer"
+							CharacterAttributes
+							{
+								"move speed bonus"	0.5
+								"damage force reduction" 0.4
+								"airblast vulnerability multiplier" 0.4
+								"override footstep sound set" 3
+								"cannot pick up intelligence" 1
+							}
+							SpawnTemplate deflagration
+							Spawntemplate Heatwave
+							SpawnTemplate Rocketattack
+							SpawnTemplate bossmusic
+							Spawntemplate //Homing rocket
+							{
+										Name "Homingattack"
+										origin "0 0 300"
+										angles "90 0 0"
+							}
+							Spawntemplate //Homing rocket
+							{
+										Name "Homingattack"
+										origin "0 100 270"
+										angles "90 0 0"
+							}
+							Spawntemplate //Homing rocket
+							{
+										Name "Homingattack"
+										origin "0 150 240"
+										angles "90 0 0"
+							}
+							Spawntemplate //Homing rocket
+							{
+										Name "Homingattack"
+										origin "0 -100 270"
+										angles "90 0 0"
+							}
+							Spawntemplate //Homing rocket
+							{
+										Name "Homingattack"
+										origin "0 -150 240"
+										angles "90 0 0"
+							}
+						}
+						
+			}
+		WaveSpawn
+			{
+				totalcurrency 100
+				name "6-S"
+				totalcount 25
+				Support 1
+				maxactive 6
+				spawncount 1
+				waitbetweenspawns 0
+				waitbeforestarting 0
+				where spawnbot
+					TFbot
+						{
+							Class Heavyweapons
+							Item "Point and Shoot"
+							Name "Heavyweapon Telekinisist"
+							ClassIcon wizard
+							WeaponRestrictions meleeonly					
+							Item "Seared Sorcerer"
+							Spawntemplate //Heavy tene attack
+							{
+										Name "rocket_fire_tene_heavyA"
+										origin "25 0 150"
+										angles "90 0 0"
+							}
+							Spawntemplate //Heavy tene attack
+							{
+										Name "rocket_fire_tene_heavyA"
+										origin "0 25 150"
+										angles "90 90 0"
+							}
+							Spawntemplate //Heavy tene attack
+							{
+										Name "rocket_fire_tene_heavyA"
+										origin "-25 0 150"
+										angles "90 180 0"
+							}
+							Spawntemplate //Heavy tene attack
+							{
+										Name "rocket_fire_tene_heavyA"
+										origin "0 -25 150"
+										angles "90 270 0"
+							}
+						}
+			}
+			WaveSpawn
+			{
+				totalcurrency 100
+				name "6-S"
+				totalcount 50
+				Support 1
+				maxactive 9
+				spawncount 3
+				waitbetweenspawns 4
+				waitbeforestarting 10
+				where spawnbot
+				Randomchoice
+				{
+					tfbot //Taken from Drill down disaster, made by Sergeant Table
+					{
+						Class Medic
+						ClassIcon "medic_crossbow"
+						Name "Crossbow Medic"
+						Skill Normal
+						WeaponRestrictions PrimaryOnly
+						Item "the crusader's crossbow"
+						Item "Berliner's Bucket Helm"
+						ItemAttributes
+						{
+							ItemName the crusader's crossbow
+							"projectile penetration" 1
+						}
+					}  
+					tfbot
+					{
+						Template T_TFBot_Heavyweapons_Shotgun
+						Item "The Family Business"
+						Attributes AlwaysCrit
+					}
+					tfbot
+					{
+						Template T_TFBot_Soldier_DirectHit
+						Skill expert
+					}
+					tfbot
+					{
+						Template T_TFBot_Heavyweapons_Heavyweight_Champ
+							Item "The Buff Banner"
+							Skill expert
+							Classicon heavy_champ_banner
+							Attributes "SpawnWithFullCharge"
+							Item "Killing Gloves of Boxing"
+							CharacterAttributes
+							{
+								"increase buff duration" 5.0			
+							}
+							ItemAttributes
+							{
+								ItemName "tf_weapon_fists"
+								"set item tint RGB" 14216476
+							}
+					}
+					tfbot
+					{
+							Class Scout
+							Item "The Concheror"
+							Skill normal
+							Classicon Scout_conch_lite
+							Attributes "SpawnWithFullCharge"
+							CharacterAttributes
+							{
+								"increase buff duration" 5.0			
+							}
+					}
+				}
+					
+			}
+	}
+Wave //Vague 7
+	{
+		checkpoint yes
+		InitWaveOutput
+			{
+				Target	bombpath_choose_random_relay
+				Action	Trigger
+			}
+			startwaveoutput
+			{
+				target wave_start_relay
+				action trigger
+			}
+			doneoutput
+			{
+				target wave_finished_relay
+				action RunScriptCode
+			}
+			WaveSpawn
+			{
+				totalcurrency 100
+				name "6-1"
+				totalcount 2
+				maxactive 1
+				spawncount 1
+				waitbetweenspawns 0
+				waitbeforestarting 0
+				//FirstSpawnWarningSound /mvm/pizza_tower_vigilante_theme.mp3
+				where spawnbot
+					TFbot
+						{
+							Class Heavyweapons
+							Attributes MiniBoss
+							Health 35000
+							Item "Point and Shoot"
+							Name "Ignis HeavyBlaster"
+							ClassIcon wizard_giant
+							WeaponRestrictions meleeonly
+							Action Mobber
+							Attributes UseBossHealthBar							
+							Item "Seared Sorcerer"
+							CharacterAttributes
+							{
+								"move speed bonus"	0.5
+								"damage force reduction" 0.4
+								"airblast vulnerability multiplier" 0.4
+								"override footstep sound set" 3
+							}
+							//First attack cross normal
+							//Spawntemplate Firetornado
+							//SpawnTemplate deflagration
+							Spawntemplate Heatwave
+							SpawnTemplate Rocketattack
+							SpawnTemplate Rocketattackb
+						}
+			}
+	}
+} //Cloture de script
